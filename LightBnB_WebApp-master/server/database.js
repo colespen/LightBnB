@@ -84,7 +84,7 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 
-const getAllReservations = function(guest_id, limit = 10) {
+const getAllReservations = (guest_id, limit = 10) => {
   const query = `SELECT reservations.id, properties.*, reservations.start_date, avg(rating) as average_rating
   FROM reservations
   JOIN properties ON reservations.property_id = properties.id
@@ -134,7 +134,7 @@ const getAllProperties = (options, limit = 10) => {
   if (options.minimum_price_per_night && options.maximum_price_per_night) {
     queryParams.push(options.minimum_price_per_night * 100, options.maximum_price_per_night * 100);
     queryString += `
-    AND cost_per_night > $${queryParams.length-1} AND cost_per_night < $${queryParams.length}`;
+    AND cost_per_night > $${queryParams.length - 1} AND cost_per_night < $${queryParams.length}`;
   }
   if (options.minimum_rating) {
     queryParams.push(options.minimum_rating);
@@ -167,9 +167,19 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  const query = `INSERT INTO properties (title, description, number_of_bedrooms, number_of_bathrooms, parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url, street, country, city, province, post_code, owner_id) 
+    VALUES 
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;
+    `;
+  const queryParams = Object.values(property);
+  return pool.query(query, queryParams)
+    .then((result) => {
+      console.log(result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return null;
+    });
 };
 exports.addProperty = addProperty;
