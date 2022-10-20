@@ -7,6 +7,7 @@ module.exports = function(router, database) {
       console.error(e);
       res.send(e)
     }); 
+    console.log(req.query);
   });
 
   router.get('/reservations', (req, res) => {
