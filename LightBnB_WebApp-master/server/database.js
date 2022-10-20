@@ -30,21 +30,6 @@ const getUserWithEmail = email => {
 };
 exports.getUserWithEmail = getUserWithEmail;
 
-// const getUserWithEmail = function(email) {
-//   let user;
-//   for (const userId in users) {
-//     user = users[userId];
-//     if (user.email.toLowerCase() === email.toLowerCase()) {
-//       break;
-//     } else {
-//       user = null;
-//     }
-//   }
-//   return Promise.resolve(user);
-// };
-// exports.getUserWithEmail = getUserWithEmail;
-
-
 /**
  * Get a single user from the database given their id.
  * @param {string} id The id of the user.
@@ -66,12 +51,6 @@ const getUserWithId = id => {
 };
 exports.getUserWithId = getUserWithId;
 
-// const getUserWithId = function(id) {
-//   return Promise.resolve(users[id]);
-// };
-// exports.getUserWithId = getUserWithId;
-
-
 /**
  * Add a new user to the database.
  * @param {{name: string, password: string, email: string}} user
@@ -82,7 +61,8 @@ const addUser = (user) => {
   const query = `INSERT INTO users (
     name, email, password) 
     VALUES ($1, $2, $3) RETURNING *;`;
-  return pool.query(query, [user.name, user.email, user.password])
+    const { name, email, password } = user;
+  return pool.query(query, [name, email, password])
     .then((result) => {
       return result.rows;
     })
