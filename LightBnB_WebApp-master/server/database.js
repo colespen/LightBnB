@@ -9,8 +9,8 @@ const pool = new Pool({
   database: 'lightbnb'
 });
 
-/// Users
-
+////
+///   Users
 /**
  * Get a single user from the database given their email.
  * @param {String} email The email of the user.
@@ -61,7 +61,7 @@ const addUser = (user) => {
   const query = `INSERT INTO users (
     name, email, password) 
     VALUES ($1, $2, $3) RETURNING *;`;
-    const { name, email, password } = user;
+  const { name, email, password } = user;
   return pool.query(query, [name, email, password])
     .then((result) => {
       return result.rows;
@@ -73,20 +73,33 @@ const addUser = (user) => {
 };
 exports.addUser = addUser;
 
-/// Reservations
-
+////
+///   Reservations
 /**
  * Get all reservations for a single user.
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  const query = `SELECT reservations.id, properties.*, reservations.start_date, avg(rating) as average_rating
+  FROM reservations
+  JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  GROUP BY properties.id, reservations.id
+  ORDER BY reservations.start_date;`;
+  return pool.query(query, [guest_id])
+    .then((result) => {
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 exports.getAllReservations = getAllReservations;
 
-/// Properties
-
+////
+///    Properties
 /**
  * Get all properties.
  * @param {{}} options An object containing query options.
@@ -104,7 +117,6 @@ const getAllProperties = (options, limit = 10) => {
     });
 };
 exports.getAllProperties = getAllProperties;
-
 
 /**
  * Add a property to the database
