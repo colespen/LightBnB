@@ -34,10 +34,9 @@ $(() => {
           $error.remove();
           views_manager.show('listings');
         }, 2000);
-        
         break;
       }
     }
-  }
-  
+  };
+
 });

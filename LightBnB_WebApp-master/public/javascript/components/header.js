@@ -48,18 +48,20 @@ $(() => {
   $("header").on("click", '.my_reservations_button', function() {
     propertyListings.clearListings();
     getAllReservations()
-      .then(function(json) {
-        propertyListings.addProperties(json.reservations, true);
-        views_manager.show('listings');
-      })
+    .then(function(json) {
+      propertyListings.addProperties(json.reservations, true);
+      views_manager.show('listings');
+      $('.reserve').hide();
+    })
       .catch(error => console.error(error));
   });
   $("header").on("click", '.my_listing_button', function() {
     propertyListings.clearListings();
     getAllListings(`owner_id=${currentUser.id}`)
-      .then(function(json) {
-        propertyListings.addProperties(json.properties);
-        views_manager.show('listings');
+    .then(function(json) {
+      propertyListings.addProperties(json.properties);
+      views_manager.show('listings');
+      $('.reserve').hide();
     });
   });
 
@@ -88,8 +90,10 @@ $(() => {
     });
   });
 
-  $('header').on('click', '.create_listing_button', function() {
+  $("header").on('click', '.create_listing_button', function() {
     views_manager.show('newProperty');
   });
-
+  $("body").on('click', '.reserve', function() {
+    views_manager.show('reserve');
+  });
 });

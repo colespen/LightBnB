@@ -109,7 +109,7 @@ exports.getAllReservations = getAllReservations;
 //
 ///////////////////////////////////////////////////////////////
 /**
- * Get all properties.
+ * Get all properties via SEARCH.
  * @param {{}} options An object containing query options.
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
@@ -125,7 +125,8 @@ const getAllProperties = (options, limit = 10) => {
   `;
   if (options.city) {
     queryParams.push(`%${options.city}%`);
-    queryString += `AND city LIKE $${queryParams.length}`;
+    queryString += `AND LOWER(city) LIKE 
+    LOWER($${queryParams.length})`;
   }
   if (options.owner_id) {
     queryParams.push(options.owner_id);
@@ -136,30 +137,30 @@ const getAllProperties = (options, limit = 10) => {
     queryString += `
     AND cost_per_night > $${queryParams.length - 1} AND cost_per_night < $${queryParams.length}`;
   }
+  if (options.minimum_price_per_night) {
+    queryParams.push(options.minimum_price_per_night * 100);
+    queryString += `
+    AND cost_per_night >= $${queryParams.length}`;
+  }
   if (options.minimum_rating) {
     queryParams.push(options.minimum_rating);
     queryString += `
     AND rating >= $${queryParams.length}`;
   }
-
   queryParams.push(limit);
   queryString += `
   GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
-  // console.log(queryString, queryParams);
-
   return pool.query(queryString, queryParams)
-    .then((result) => {
-      // console.log(result.rows);
-      return result.rows;
-    })
+    .then((result) => result.rows)
     .catch((err) => {
       console.log(err.message);
     });
 };
 exports.getAllProperties = getAllProperties;
+
 
 /**
  * Add a property to the database
